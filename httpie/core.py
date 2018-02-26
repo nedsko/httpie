@@ -29,7 +29,7 @@ from httpie.output.streams import (
     write_stream,
     write_stream_with_colors_win_py3
 )
-
+from coverage_tool import has_branched, write_info
 
 def get_exit_status(http_status, follow=False):
     """Translate HTTP status code to exit status code."""
@@ -86,8 +86,11 @@ def program(args, env, log_error):
     downloader = None
     show_traceback = args.debug or args.traceback
 
+    write_info('program','Total: 16')
+
     try:
         if args.download:
+            has_branched('program', 1)
             args.follow = True  # --download implies --follow.
             downloader = Downloader(
                 output_file=args.output_file,
@@ -98,18 +101,22 @@ def program(args, env, log_error):
 
         final_response = get_response(args, config_dir=env.config.directory)
         if args.all:
+            has_branched('program', 2)
             responses = final_response.history + [final_response]
         else:
+            has_branched('program', 3)
             responses = [final_response]
 
         for response in responses:
 
             if args.check_status or downloader:
+                has_branched('program', 4)
                 exit_status = get_exit_status(
                     http_status=response.status_code,
                     follow=args.follow
                 )
                 if not env.stdout_isatty and exit_status != ExitStatus.OK:
+                    has_branched('program', 5)
                     log_error(
                         'HTTP %s %s', response.raw.status, response.raw.reason,
                         level='warning'
@@ -131,19 +138,29 @@ def program(args, env, log_error):
                 'outfile': env.stdout,
                 'flush': env.stdout_isatty or args.stream
             }
+            if response is final_response:
+                has_branched('program', 6)
+            else:
+                has_branched('program', 7)
             try:
                 if env.is_windows and is_py3 and 'colors' in args.prettify:
+                    has_branched('program', 8)
                     write_stream_with_colors_win_py3(**write_stream_kwargs)
                 else:
+                    has_branched('program', 9)
                     write_stream(**write_stream_kwargs)
             except IOError as e:
+                has_branched('program', 10)
                 if not show_traceback and e.errno == errno.EPIPE:
+                    has_branched('program', 11)
                     # Ignore broken pipes unless --traceback.
                     env.stderr.write('\n')
                 else:
+                    has_branched('program', 12)
                     raise
 
         if downloader and exit_status == ExitStatus.OK:
+            has_branched('program', 13)
             # Last response body download.
             download_stream, download_to = downloader.start(final_response)
             write_stream(
@@ -153,6 +170,7 @@ def program(args, env, log_error):
             )
             downloader.finish()
             if downloader.interrupted:
+                has_branched('program', 14)
                 exit_status = ExitStatus.ERROR
                 log_error('Incomplete download: size=%d; downloaded=%d' % (
                     downloader.status.total_size,
@@ -162,10 +180,12 @@ def program(args, env, log_error):
 
     finally:
         if downloader and not downloader.finished:
+            has_branched('program', 15)
             downloader.failed()
 
         if (not isinstance(args, list) and args.output_file and
                 args.output_file_specified):
+            has_branched('program', 16)
             args.output_file.close()
 
 
