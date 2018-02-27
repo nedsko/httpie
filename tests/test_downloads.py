@@ -154,6 +154,19 @@ class TestDownloads:
         assert not downloader.interrupted
         os.remove(downloader._output_file.name)
 
+    def test_no_output_file_with_filename_in_header(self, httpbin_both):
+        downloader = Downloader()
+        downloader.start(Response(
+            url=httpbin_both.url + '/',
+            headers={'Content-Disposition': 'filename="test.jpg"'}
+        ))
+        time.sleep(1.1)
+        downloader.chunk_downloaded(b'12345')
+        downloader.finish()
+        assert not downloader.interrupted
+        assert downloader._output_file.name == 'test.jpg'
+        os.remove(downloader._output_file.name)
+
     def test_download_no_Content_Length(self, httpbin_both):
         devnull = open(os.devnull, 'w')
         downloader = Downloader(output_file=devnull, progress_file=devnull)
