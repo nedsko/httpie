@@ -73,6 +73,7 @@ class TestColors:
             ('text/plain',           True, 'foo', 'Text only'),
         ]
     )
+
     def test_get_lexer(self, mime, explicit_json, body, expected_lexer_name):
         lexer = get_lexer(mime, body=body, explicit_json=explicit_json)
         assert lexer is not None
@@ -80,6 +81,10 @@ class TestColors:
 
     def test_get_lexer_not_found(self):
         assert get_lexer('xxx/yyy') is None
+
+    def test_get_lexer_not_found_body_explicitjson(self):
+        lexer = get_lexer('xxx/yyy', True, '{"Lorem": "ipsum"}')
+        assert lexer is not None
 
 
 class TestPrettyOptions:
