@@ -237,6 +237,25 @@ class TestArgumentParser:
         assert self.parser.args.url == 'http://example.com/'
         assert self.parser.args.items == []
 
+    def test_guess_when_method_not_set_and_has_data(self):
+        self.parser.args = argparse.Namespace()
+        self.parser.args.method = 'http://example.com/'
+        self.parser.args.url = 'data=field'
+        self.parser.args.items = []
+        self.parser.args.ignore_stdin = False
+        self.parser.env = MockEnvironment()
+        self.parser.env.stdin_isatty = False
+        self.parser._guess_method()
+
+        assert self.parser.args.method == 'POST'
+        assert self.parser.args.url == 'http://example.com/'
+        assert self.parser.args.items == [
+            KeyValue(key='data',
+                     value='field',
+                     sep='=',
+                     orig='data=field')
+        ]
+
     def test_guess_when_method_set_but_invalid_and_data_field(self):
         self.parser.args = argparse.Namespace()
         self.parser.args.method = 'http://example.com/'
