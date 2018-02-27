@@ -431,31 +431,39 @@ class ProgressReporterThread(threading.Thread):
             sleep(self._tick)
 
     def report_speed(self):
-
+        write_info('report_speed', 'Total: 9')
         now = time()
 
         if now - self._prev_time >= self._update_interval:
+            has_branched('report_speed', 1)
             downloaded = self.status.downloaded
             try:
+                has_branched('report_speed', 2)
                 speed = ((downloaded - self._prev_bytes) /
                          (now - self._prev_time))
             except ZeroDivisionError:
+                has_branched('report_speed', 3)
                 speed = 0
-
             if not self.status.total_size:
+                has_branched('report_speed', 4)
                 self._status_line = PROGRESS_NO_CONTENT_LENGTH.format(
                     downloaded=humanize_bytes(downloaded),
                     speed=humanize_bytes(speed),
                 )
             else:
+                has_branched('report_speed', 5)
                 try:
+                    has_branched('report_speed', 6)
                     percentage = downloaded / self.status.total_size * 100
                 except ZeroDivisionError:
+                    has_branched('report_speed', 7)
                     percentage = 0
 
                 if not speed:
+                    has_branched('report_speed', 8)
                     eta = '-:--:--'
                 else:
+                    has_branched('report_speed', 9)
                     s = int((self.status.total_size - downloaded) / speed)
                     h, s = divmod(s, 60 * 60)
                     m, s = divmod(s, 60)
