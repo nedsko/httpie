@@ -154,7 +154,7 @@ def program(args, env, log_error):
                         if 'colors' in args.prettify:
                             has_branched('program', 10)
                             write_stream_with_colors_win_py3(**write_stream_kwargs)
-                else:
+                elif not env.is_windows or not is_py3 or not 'colors' in args.prettify:
                     has_branched('program', 11)
                     write_stream(**write_stream_kwargs)
             except IOError as e:
@@ -165,7 +165,7 @@ def program(args, env, log_error):
                         has_branched('program', 14)
                         # Ignore broken pipes unless --traceback.
                         env.stderr.write('\n')
-                else:
+                elif show_traceback or not e.errno == errno.EPIPE:
                     has_branched('program', 15)
                     raise
 
@@ -191,14 +191,13 @@ def program(args, env, log_error):
         return exit_status
 
     finally:
-        if downloader and not downloader.finished:
+        if downloader:
             has_branched('program', 19)
             if not downloader.finished:
                 has_branched('program', 20)
                 downloader.failed()
 
-        if (not isinstance(args, list) and args.output_file and
-                args.output_file_specified):
+        if not isinstance(args, list):
             has_branched('program', 21)
             if args.output_file:
                 has_branched('program', 22)
