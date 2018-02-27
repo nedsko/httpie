@@ -15,13 +15,15 @@ def test_keyboard_interrupt_during_arg_parsing_exit_status_traceback(httpbin):
     with mock.patch('httpie.cli.parser.parse_args',
                     side_effect=KeyboardInterrupt()):
         with pytest.raises(KeyboardInterrupt):
-            http('--traceback', 'GET', httpbin.url + '/get',
+            r = http('--traceback', 'GET', httpbin.url + '/get',
                  error_exit_ok=True)
+            assert r.exit_status == ExitStatus.ERROR_CTRL_C
 
 def test_system_exit_during_arg_parsing_exit_status_traceback(httpbin):
     with mock.patch('httpie.cli.parser.parse_args',
                     side_effect=SystemExit()):
-        http('--traceback', 'GET', httpbin.url + '/get', error_exit_ok=True)
+        r = http('--traceback', 'GET', httpbin.url + '/get', error_exit_ok=True)
+        assert r.exit_status == ExitStatus.ERROR
 
 def test_keyboard_interrupt_in_program_exit_status(httpbin):
     with mock.patch('httpie.core.program',
@@ -31,8 +33,15 @@ def test_keyboard_interrupt_in_program_exit_status(httpbin):
 
     with mock.patch('httpie.core.program',
                     side_effect=SystemExit()):
-        r = http('GET', httpbin.url + '/get', error_exit_ok=True)
+        r = http('--traceback', 'GET', httpbin.url + '/get', error_exit_ok=True)
         assert r.exit_status == ExitStatus.ERROR
+
+def test_keyboard_interrupt_in_program_exit_status_traceback(httpbin):
+    with mock.patch('httpie.core.program',
+                    side_effect=KeyboardInterrupt()):
+        with pytest.raises(KeyboardInterrupt):
+            r = http('--traceback', 'GET', httpbin.url + '/get', error_exit_ok=True)
+            assert r.exit_status == ExitStatus.ERROR_CTRL_C
 
 def test_ok_response_exits_0(httpbin):
     r = http('GET', httpbin.url + '/get')
