@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 
 import pytest
@@ -137,6 +138,8 @@ class TestDownloads:
         assert 'Done' in r.stderr
         assert body == r
 
+
+
     def test_download_with_Content_Length(self, httpbin_both):
         devnull = open(os.devnull, 'w')
         downloader = Downloader(output_file=devnull, progress_file=devnull)
@@ -160,6 +163,20 @@ class TestDownloads:
         downloader.finish()
         assert not downloader.interrupted
         os.remove(downloader._output_file.name)
+
+    def test_download_resume(self, httpbin_both):
+        # Test downloading partial content of a larger file
+        payload = b'12345'
+        size_payload = sys.getsizeof(payload)
+        content_range = 'bytes 0-' + str(size_payload-1) + '/*'
+        downloader = Downloader(resume=True)
+        downloader.start(Response(url=httpbin_both.url + '/',
+                                    status_code=206, # PARTIAL_CONTENT
+                                    headers={'Content-Range': content_range}))
+        time.sleep(1.1)
+        downloader.chunk_downloaded(payload)
+        downloader.finish()
+        assert not downloader.interrupted
 
     def test_no_output_file_with_filename_in_header(self, httpbin_both):
         downloader = Downloader()
