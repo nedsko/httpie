@@ -17,6 +17,12 @@ def test_keyboard_interrupt_during_arg_parsing_exit_status_traceback(httpbin):
         with pytest.raises(KeyboardInterrupt):
             http('--traceback', 'GET', httpbin.url + '/get',
                  error_exit_ok=True)
+
+def test_system_exit_during_arg_parsing_exit_status_traceback(httpbin):
+    with mock.patch('httpie.cli.parser.parse_args',
+                    side_effect=SystemExit()):
+        http('--traceback', 'GET', httpbin.url + '/get', error_exit_ok=True)
+
 def test_keyboard_interrupt_in_program_exit_status(httpbin):
     with mock.patch('httpie.core.program',
                     side_effect=KeyboardInterrupt()):
