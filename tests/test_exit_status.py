@@ -10,13 +10,16 @@ def test_keyboard_interrupt_during_arg_parsing_exit_status(httpbin):
         r = http('GET', httpbin.url + '/get', error_exit_ok=True)
         assert r.exit_status == ExitStatus.ERROR_CTRL_C
 
-
 def test_keyboard_interrupt_in_program_exit_status(httpbin):
     with mock.patch('httpie.core.program',
                     side_effect=KeyboardInterrupt()):
         r = http('GET', httpbin.url + '/get', error_exit_ok=True)
         assert r.exit_status == ExitStatus.ERROR_CTRL_C
 
+    with mock.patch('httpie.core.program',
+                    side_effect=SystemExit()):
+        r = http('GET', httpbin.url + '/get', error_exit_ok=True)
+        assert r.exit_status == ExitStatus.ERROR
 
 def test_ok_response_exits_0(httpbin):
     r = http('GET', httpbin.url + '/get')
