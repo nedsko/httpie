@@ -83,8 +83,8 @@ class TestColors:
         assert get_lexer('xxx/yyy') is None
 
     def test_get_lexer_not_found_body_explicitjson(self):
-        lexer = get_lexer('xxx/yyy', True, '{"Lorem": "ipsum"}')
-        assert lexer is not None
+        lexer = get_lexer('xxx/yyy', True, 'asdf')
+        assert lexer is None
 
 
 class TestPrettyOptions:
