@@ -7,7 +7,7 @@ import pytest
 from requests.exceptions import InvalidSchema
 
 from httpie import input
-from httpie.input import KeyValue, KeyValueArgType, DataDict
+from httpie.input import KeyValue, KeyValueArgType, DataDict, ArgumentTypeError
 from httpie import ExitStatus
 from httpie.cli import parser
 from utils import MockEnvironment, http, HTTP_OK
@@ -237,7 +237,7 @@ class TestArgumentParser:
         assert self.parser.args.url == 'http://example.com/'
         assert self.parser.args.items == []
 
-    def test_guess_when_method_not_set_and_has_data(self):
+    def test_guess_when_set_but_invalid_and_has_data(self):
         self.parser.args = argparse.Namespace()
         self.parser.args.method = 'http://example.com/'
         self.parser.args.url = 'data=field'
@@ -255,6 +255,18 @@ class TestArgumentParser:
                      sep='=',
                      orig='data=field')
         ]
+
+    def test_guess_when_set_but_invalid_with_exception_args(self):
+        self.parser.args = argparse.Namespace()
+        self.parser.args.method = 'http://example.com/'
+        self.parser.args.url = 'data.field'  # Invalid, should be data=field
+        self.parser.args.items = []
+        self.parser.args.traceback = True
+        self.parser.args.ignore_stdin = False
+        self.parser.env = MockEnvironment()
+        self.parser.env.stdin_isatty = False
+        with pytest.raises(ArgumentTypeError):
+            self.parser._guess_method()
 
     def test_guess_when_method_set_but_invalid_and_data_field(self):
         self.parser.args = argparse.Namespace()
