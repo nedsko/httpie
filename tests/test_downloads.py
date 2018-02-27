@@ -144,6 +144,16 @@ class TestDownloads:
         downloader.finish()
         assert not downloader.interrupted
 
+    def test_no_output_file(self, httpbin_both):
+        # No output file given will generate one
+        downloader = Downloader()
+        downloader.start(Response(url=httpbin_both.url + '/'))
+        time.sleep(1.1)
+        downloader.chunk_downloaded(b'12345')
+        downloader.finish()
+        assert not downloader.interrupted
+        os.remove(downloader._output_file.name)
+
     def test_download_no_Content_Length(self, httpbin_both):
         devnull = open(os.devnull, 'w')
         downloader = Downloader(output_file=devnull, progress_file=devnull)
