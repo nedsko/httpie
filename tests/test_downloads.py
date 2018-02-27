@@ -28,6 +28,11 @@ class TestDownloadUtils:
         assert parse('bytes 100-199/200', 100) == 200
         assert parse('bytes 100-199/*', 100) == 200
 
+        # Should get to path ID 9 and 10: first_byte_pos == resumed_from
+        # and instance_length is not None
+        # and last_byte_pos + 1 != instance_length
+        pytest.raises(ContentRangeError, parse, 'bytes 100-190/200', 100)
+
         # missing
         pytest.raises(ContentRangeError, parse, None, 100)
 
@@ -45,6 +50,8 @@ class TestDownloadUtils:
 
         # invalid byte-range-resp-spec
         pytest.raises(ContentRangeError, parse, 'bytes 100-100/*', 100)
+
+
 
     @pytest.mark.parametrize('header, expected_filename', [
         ('attachment; filename=hello-WORLD_123.txt', 'hello-WORLD_123.txt'),
